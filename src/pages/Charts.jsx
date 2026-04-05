@@ -10,16 +10,15 @@ function useChart(ref, config, deps) {
   const instance = useRef(null);
   useEffect(() => {
     if (!ref.current) return;
-    const observer = new ResizeObserver(() => {
+    const timer = setTimeout(() => {
       if (!ref.current) return;
       if (instance.current) instance.current.destroy();
       instance.current = new Chart(ref.current, config());
-      observer.disconnect();
-    });
-    observer.observe(ref.current.parentElement);
+    }, 50);
     return () => {
-      observer.disconnect();
+      clearTimeout(timer);
       instance.current?.destroy();
+      instance.current = null;
     };
   }, deps);
 }
@@ -34,7 +33,7 @@ export default function ChartsPage() {
   const textColor    = darkMode ? '#8b949e' : '#6b7280';
   const gridColor    = darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
   const surfaceColor = darkMode ? '#1c2128' : '#ffffff';
-  const isMobile     = window.innerWidth < 600; // ✅ detect mobile
+  const isMobile     = window.innerWidth < 600;
 
   const barRef   = useRef(null);
   const donutRef = useRef(null);
@@ -62,7 +61,6 @@ export default function ChartsPage() {
     },
   }), [transactions, darkMode]);
 
-  // ✅ Fixed donut — legend bottom on mobile, correct % in tooltip
   useChart(donutRef, () => ({
     type: 'doughnut',
     data: {
@@ -80,12 +78,12 @@ export default function ChartsPage() {
       cutout: '65%',
       plugins: {
         legend: {
-          position: isMobile ? 'bottom' : 'right', // ✅ bottom on mobile
+          position: isMobile ? 'bottom' : 'right',
           labels: { color: textColor, font: { family: "'DM Sans'", size: 12 }, boxWidth: 10, borderRadius: 3, padding: 12 }
         },
         tooltip: {
           callbacks: {
-            label: ctx => { // ✅ fixed percentage calculation
+            label: ctx => {
               const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
               const pct = ((ctx.raw / total) * 100).toFixed(1);
               return ` ${ctx.label}: $${fmtAmount(ctx.raw)} (${pct}%)`;
@@ -163,7 +161,6 @@ export default function ChartsPage() {
               <div className={styles.chart_sub}>All-time distribution</div>
             </div>
           </div>
-          {/* ✅ taller on mobile to fit bottom legend */}
           <div className={styles.chart_wrap} style={{ height: isMobile ? 250 : 260 }}>
             <canvas ref={donutRef} />
           </div>
