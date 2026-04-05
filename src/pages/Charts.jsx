@@ -164,7 +164,7 @@ export default function ChartsPage() {
             </div>
           </div>
           {/* ✅ taller on mobile to fit bottom legend */}
-          <div className={styles.chart_wrap} style={{ height: isMobile ? 320 : 260 }}>
+          <div className={styles.chart_wrap} style={{ height: isMobile ? 250 : 260 }}>
             <canvas ref={donutRef} />
           </div>
         </div>
