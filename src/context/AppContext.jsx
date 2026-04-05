@@ -30,7 +30,7 @@ const defaultState = {
   filters: { category: '', month: '', type: '', search: '', amountMin: '', amountMax: '' },
   sortBy: 'date',
   sortDir: 'desc',
-  activeTab: 'transactions',
+  activeTab: 'overview',
   notification: null,
 };
 
@@ -80,7 +80,7 @@ export function AppProvider({ children }) {
     ...defaultState,
     ...(saved || {}),
     filters: defaultState.filters,
-    activeTab: 'transactions',
+   activeTab: 'overview',
     notification: null,
   });
 

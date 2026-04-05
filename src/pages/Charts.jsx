@@ -6,7 +6,6 @@ import styles from './Charts.module.css';
 
 Chart.register(...registerables);
 
-// ✅ REPLACE your old useChart with this
 function useChart(ref, config, deps) {
   const instance = useRef(null);
   useEffect(() => {
@@ -35,6 +34,7 @@ export default function ChartsPage() {
   const textColor    = darkMode ? '#8b949e' : '#6b7280';
   const gridColor    = darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
   const surfaceColor = darkMode ? '#1c2128' : '#ffffff';
+  const isMobile     = window.innerWidth < 600; // ✅ detect mobile
 
   const barRef   = useRef(null);
   const donutRef = useRef(null);
@@ -62,6 +62,7 @@ export default function ChartsPage() {
     },
   }), [transactions, darkMode]);
 
+  // ✅ Fixed donut — legend bottom on mobile, correct % in tooltip
   useChart(donutRef, () => ({
     type: 'doughnut',
     data: {
@@ -78,8 +79,19 @@ export default function ChartsPage() {
       responsive: true, maintainAspectRatio: false,
       cutout: '65%',
       plugins: {
-        legend: { position: 'right', labels: { color: textColor, font: { family: "'DM Sans'", size: 12 }, boxWidth: 10, borderRadius: 3, padding: 12 } },
-        tooltip: { callbacks: { label: ctx => ` ${ctx.label}: $${fmtAmount(ctx.raw)} (${ctx.parsed.toFixed(1)}%)` } },
+        legend: {
+          position: isMobile ? 'bottom' : 'right', // ✅ bottom on mobile
+          labels: { color: textColor, font: { family: "'DM Sans'", size: 12 }, boxWidth: 10, borderRadius: 3, padding: 12 }
+        },
+        tooltip: {
+          callbacks: {
+            label: ctx => { // ✅ fixed percentage calculation
+              const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+              const pct = ((ctx.raw / total) * 100).toFixed(1);
+              return ` ${ctx.label}: $${fmtAmount(ctx.raw)} (${pct}%)`;
+            }
+          }
+        },
       },
     },
   }), [transactions, darkMode]);
@@ -151,7 +163,8 @@ export default function ChartsPage() {
               <div className={styles.chart_sub}>All-time distribution</div>
             </div>
           </div>
-          <div className={styles.chart_wrap} style={{ height: 260 }}>
+          {/* ✅ taller on mobile to fit bottom legend */}
+          <div className={styles.chart_wrap} style={{ height: isMobile ? 320 : 260 }}>
             <canvas ref={donutRef} />
           </div>
         </div>
